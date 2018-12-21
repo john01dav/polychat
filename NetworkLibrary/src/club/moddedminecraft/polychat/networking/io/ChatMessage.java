@@ -1,4 +1,4 @@
-package club.moddedminecraft.polychat.networking;
+package club.moddedminecraft.polychat.networking.io;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
