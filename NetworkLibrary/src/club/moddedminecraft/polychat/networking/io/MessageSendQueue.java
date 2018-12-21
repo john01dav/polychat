@@ -6,7 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class MessageSendQueue extends ThreadedQueue<Message> {
+public final class MessageSendQueue extends ThreadedQueue<Message> {
     private final Socket socket;
     private DataOutputStream dataOutputStream;
 
