@@ -17,7 +17,7 @@ public final class Server {
         this.port = port;
         messageProcessors = new CopyOnWriteArrayList<>();
         messageBuses = new CopyOnWriteArrayList<>();
-        messageProcessors.add(new MessageDispatcherQueue());
+        addMessageProcessor(new MessageDispatcherQueue());
     }
 
     public void start(){
@@ -37,6 +37,7 @@ public final class Server {
 
     public void addMessageProcessor(ThreadedQueue<MessageData> messageProcessor){
         messageProcessors.add(messageProcessor);
+        messageProcessor.start();
     }
 
     private void listenerThread(){
@@ -81,7 +82,10 @@ public final class Server {
 
         @Override
         public void receive(Message message){
-
+            MessageData messageData = new MessageData(message, messageBus);
+            for(ThreadedQueue<MessageData> messageProcessor : messageProcessors){
+                messageProcessor.enqueue(messageData);
+            }
         }
 
     }

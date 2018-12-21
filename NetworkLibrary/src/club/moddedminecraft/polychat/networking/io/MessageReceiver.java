@@ -18,6 +18,7 @@ public final class MessageReceiver {
     }
 
     public void start(){
+        messageProcessingQueue.start();
         receiverThread = new Thread(this::receiverThread);
         receiverThread.start();
     }
