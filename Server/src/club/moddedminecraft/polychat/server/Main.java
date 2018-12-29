@@ -81,8 +81,8 @@ public final class Main {
                 config.setProperty("api_token", "empty");
                 config.setProperty("discord_prefix", "--:");
                 config.setProperty("use_port", "25566");
-                config.setProperty("guild_name", "Robotics Zero Chat");
-                config.setProperty("channel_name", "spam");
+                config.setProperty("guild_name", "empty");
+                config.setProperty("channel_name", "empty");
                 config.setProperty("command_role", "empty");
                 config.store(fout, null);
             } catch (IOException e) {
