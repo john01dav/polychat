@@ -21,6 +21,7 @@ import java.util.LinkedList;
 
 public abstract class ThreadedQueue<T> {
     private Thread thread;
+    private boolean run = true;
     private LinkedList<T> queue = new LinkedList<>();
 
     public final synchronized void start(){
@@ -29,7 +30,8 @@ public abstract class ThreadedQueue<T> {
     }
 
     public final synchronized void stop(){
-        thread.stop();
+        this.run = false;
+        thread.interrupt();
     }
 
     public final synchronized void enqueue(T obj){
@@ -44,6 +46,7 @@ public abstract class ThreadedQueue<T> {
                 try{
                     Thread.sleep(5000);
                 }catch(InterruptedException e){}
+                if (!(this.run)) break;
                 T nextItem;
                 while((nextItem = getNextItem()) != null){
                     handle(nextItem);
@@ -52,6 +55,7 @@ public abstract class ThreadedQueue<T> {
         }catch(Throwable t){
             t.printStackTrace();
         }
+        System.out.println("Queue thread exiting!");
     }
 
     private final synchronized T getNextItem(){

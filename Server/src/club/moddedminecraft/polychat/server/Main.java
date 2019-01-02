@@ -47,20 +47,34 @@ public final class Main {
             System.exit(1);
         }
 
-        //Initializes the server
-        if (!initServer()) {
-            System.err.println("Starting server socket failed! Exiting...");
-            System.exit(1);
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(Main::stopServer));
 
         //Initializes discord connection if there is an api token
         if ((config.getProperty("api_token").equals("empty")) ||
                 (config.getProperty("guild_name").equals("empty")) ||
                 (config.getProperty("channel_name").equals("empty"))) {
             System.out.println("Discord parameters are empty, not starting discord connection.");
+            startServer();
         }else{
             initDiscord();
         }
+
+    }
+
+    //Puts this into a method to be used in more than one spot
+    public static void startServer() {
+        //Initializes the server
+        if (!initServer()) {
+            System.err.println("Starting server socket failed! Exiting...");
+            System.exit(1);
+        }
+    }
+
+    public static void stopServer() {
+        System.out.println("Cleaning up server");
+        discordClient.logout();
+        messageQueue.stop();
+        chatServer.stop();
     }
 
     //Manages the configuration file at startup, returning whether to proceed

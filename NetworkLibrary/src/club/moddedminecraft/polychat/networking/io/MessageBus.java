@@ -17,6 +17,7 @@
  */
 package club.moddedminecraft.polychat.networking.io;
 
+import java.io.IOException;
 import java.net.Socket;
 
 public final class MessageBus {
@@ -38,6 +39,16 @@ public final class MessageBus {
     public void stop(){
         messageReceiver.stop();
         messageSendQueue.stop();
+        try {
+            socket.close();
+        } catch (IOException e) {
+            System.err.println("Exception closing socket!");
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isSocketClosed() {
+        return this.socket.isClosed();
     }
 
     public void sendMessage(Message message){

@@ -20,11 +20,13 @@ public class DiscordEvent {
                     if (channel.getName().equals(Main.config.getProperty("channel_name"))) {
                         Main.channel = channel;
                         System.out.println("Established main message channel!");
+                        Main.startServer();
                         return;
                     }
                 }
             }
         }
+        Main.startServer();
         System.out.println("Failed to establish message channel! Will not send messages...");
     }
 

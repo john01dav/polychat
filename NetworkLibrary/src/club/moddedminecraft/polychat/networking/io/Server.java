@@ -20,8 +20,10 @@ package club.moddedminecraft.polychat.networking.io;
 import club.moddedminecraft.polychat.networking.util.ThreadedQueue;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class Server {
@@ -43,13 +45,23 @@ public final class Server {
     }
 
     public void stop(){
-        listenerThread.stop();
+        listenerThread.interrupt();
+        for (MessageBus bus : messageBuses) {
+            bus.stop();
+        }
     }
 
     public void sendMessage(Message message){
+        ArrayList<MessageBus> toRemove = new ArrayList<>();
         for(MessageBus messageBus : messageBuses){
-            messageBus.sendMessage(message);
+            if (messageBus.isSocketClosed()) {
+                toRemove.add(messageBus);
+                messageBus.stop();
+            }else{
+                messageBus.sendMessage(message);
+            }
         }
+        messageBuses.removeAll(toRemove);
     }
 
     public void addMessageProcessor(ThreadedQueue<MessageData> messageProcessor){
@@ -72,9 +84,11 @@ public final class Server {
                     e.printStackTrace();
                 }
             }
+        }catch (InterruptedIOException ignored) {
         }catch(IOException e){
             e.printStackTrace();
         }
+        System.out.println("Server listener thread exiting!");
     }
 
     private final class MessageDispatcherQueue extends ThreadedQueue<MessageData>{
@@ -82,8 +96,12 @@ public final class Server {
 
         @Override
         protected void handle(MessageData messageData) {
+            ArrayList<MessageBus>  toRemove = new ArrayList<>();
             for(MessageBus messageBus : messageBuses){
-                if(messageBus != messageData.getMessageBus()){
+                if (messageBus.isSocketClosed()) {
+                    toRemove.add(messageBus);
+                    messageBus.stop();
+                }else if(messageBus != messageData.getMessageBus()){
                     messageBus.sendMessage(messageData.getMessage());
                 }
             }

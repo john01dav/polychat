@@ -20,7 +20,9 @@ package club.moddedminecraft.polychat.networking.io;
 import club.moddedminecraft.polychat.networking.util.ThreadedQueue;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.Socket;
 
 public final class MessageReceiver {
@@ -41,7 +43,7 @@ public final class MessageReceiver {
     }
 
     public void stop(){
-        receiverThread.stop();
+        receiverThread.interrupt();
     }
 
     private void receiverThread(){
@@ -70,9 +72,16 @@ public final class MessageReceiver {
                         System.err.print("[Polychat] Warning: Illegal message id: " + messageId);
                 }
             }
-        }catch(IOException e){
+        }catch (InterruptedIOException | EOFException ignored) {
+        }catch (IOException e){
             e.printStackTrace();
         }
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Message receiver thread exiting!");
     }
 
     private class MessageProcessingQueue extends ThreadedQueue<Message>{
