@@ -20,6 +20,7 @@
 package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.Server;
+import club.moddedminecraft.polychat.server.info.OnlineServers;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
@@ -37,6 +38,7 @@ public final class Main {
     public static PrintMessageQueue messageQueue;
     public static IDiscordClient discordClient;
     public static IChannel channel = null;
+    public static OnlineServers serverInfo = new OnlineServers();
 
     public static void main(String[] args) {
         //Reads the config file and exits if something went wrong

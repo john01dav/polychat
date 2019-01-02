@@ -25,16 +25,18 @@ import sx.blah.discord.handle.obj.IUser;
 
 public class DiscordCommand {
     public static void processMessage(IUser user, IMessage message) {
-        ChatMessage discordMessage = new ChatMessage("[D]", user.getName(), message.getContent());
-        Main.chatServer.sendMessage(discordMessage);
-    }
-
-    public static void listServers() {
-        //TODO list servers online
-    }
-
-    public static void setChatChannel() {
-        //TODO set chat channel
+        String discordPrefix = Main.config.getProperty("discord_prefix");
+        if (message.getContent().startsWith(discordPrefix)) {
+            String command = message.getContent().replace(discordPrefix, "");
+            if (command.startsWith("listall")) Main.serverInfo.serversInfo();
+            else if (command.startsWith("listplayers")) {
+                String id = command.replace("listplayers ", "");
+                Main.serverInfo.serverInfo(id);
+            }
+        }else {
+            ChatMessage discordMessage = new ChatMessage("[Discord] " + user.getName(), message.getContent(), "empty");
+            Main.chatServer.sendMessage(discordMessage);
+        }
     }
 
     public static void runCommand() {
@@ -43,9 +45,5 @@ public class DiscordCommand {
 
     public static void restartServer() {
         //TODO restart the server
-    }
-
-    public static void onlinePlayers() {
-        //TODO list online players
     }
 }

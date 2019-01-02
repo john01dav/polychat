@@ -46,7 +46,7 @@ public final class MessageReceiver {
 
     private void receiverThread(){
         try(
-                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+                DataInputStream dataInputStream = new DataInputStream(socket.getInputStream())
         ){
             while(true){
                 short messageId = dataInputStream.readShort();
@@ -56,6 +56,15 @@ public final class MessageReceiver {
                         break;
                     case BroadcastMessage.MESSAGE_TYPE_ID:
                         messageProcessingQueue.enqueue(new BroadcastMessage(dataInputStream));
+                        break;
+                    case ServerStatusMessage.MESSAGE_TYPE_ID:
+                        messageProcessingQueue.enqueue(new ServerStatusMessage(dataInputStream));
+                        break;
+                    case PlayerStatusMessage.MESSAGE_TYPE_ID:
+                        messageProcessingQueue.enqueue(new PlayerStatusMessage(dataInputStream));
+                        break;
+                    case ServerInfoMessage.MESSAGE_TYPE_ID:
+                        messageProcessingQueue.enqueue(new ServerInfoMessage(dataInputStream));
                         break;
                     default:
                         System.err.print("[Polychat] Warning: Illegal message id: " + messageId);
