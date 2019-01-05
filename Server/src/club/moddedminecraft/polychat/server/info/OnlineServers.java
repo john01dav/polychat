@@ -69,6 +69,14 @@ public class OnlineServers {
 
     //Adds a server to the list
     public void serverConnected(String serverID, String serverName, String serverAddress, int maxPlayers) {
+        OnlineServer toRemove = null;
+        for (OnlineServer server : onlineServers) {
+            if (serverID.equals(server.getServerID())) {
+                toRemove = server;
+                break;
+            }
+        }
+        if (toRemove != null) onlineServers.remove(toRemove);
         OnlineServer connected = new OnlineServer(serverID, serverName, serverAddress, maxPlayers);
         this.onlineServers.add(connected);
     }

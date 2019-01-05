@@ -19,16 +19,15 @@
  */
 package club.moddedminecraft.polychat.server;
 
+import club.moddedminecraft.polychat.networking.io.BroadcastMessage;
 import club.moddedminecraft.polychat.networking.io.Server;
 import club.moddedminecraft.polychat.server.info.OnlineServers;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Properties;
 
 public final class Main {
@@ -39,6 +38,7 @@ public final class Main {
     public static IDiscordClient discordClient;
     public static IChannel channel = null;
     public static OnlineServers serverInfo = new OnlineServers();
+    public static BroadcastManager broadcastManager = null;
 
     public static void main(String[] args) {
         //Reads the config file and exits if something went wrong
@@ -61,6 +61,39 @@ public final class Main {
 
     }
 
+    //Manages starting the broadcast thread
+    public static void startBroadcaster() {
+        File messageFile = new File(System.getProperty("user.dir"), "Messages.txt");
+        //File is not there, creates it and moves on
+        if (!(messageFile.exists())) {
+            try {
+                messageFile.createNewFile();
+            } catch (IOException e) {
+                System.err.println("Error creating file!");
+                e.printStackTrace();
+            }
+            System.out.println("No broadcast messages! Broadcaster not starting...");
+            return;
+        }
+        //File is there, reads messages and creates message objects
+        if ((messageFile.exists()) && ((messageFile.length()) > 0)) {
+            ArrayList<BroadcastMessage> messages = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(messageFile))) {
+                String line;
+                String prefix = config.getProperty("broadcast_prefix");
+                int color = Integer.parseInt(config.getProperty("prefix_color"));
+                while ((line = (reader.readLine())) != null) {
+                    BroadcastMessage broadcastMessage = new BroadcastMessage(prefix, line, color);
+                    messages.add(broadcastMessage);
+                }
+                broadcastManager = new BroadcastManager(messages);
+            }catch (IOException e) {
+                System.out.println("Error reading broadcast messages!");
+                e.printStackTrace();
+            }
+        }
+    }
+
     //Puts this into a method to be used in more than one spot
     public static void startServer() {
         //Initializes the server
@@ -68,10 +101,12 @@ public final class Main {
             System.err.println("Starting server socket failed! Exiting...");
             System.exit(1);
         }
+        startBroadcaster();
     }
 
     public static void stopServer() {
         System.out.println("Cleaning up server");
+        if (broadcastManager != null) broadcastManager.stop();
         discordClient.logout();
         messageQueue.stop();
         chatServer.stop();
@@ -100,6 +135,9 @@ public final class Main {
                 config.setProperty("guild_name", "empty");
                 config.setProperty("channel_name", "empty");
                 config.setProperty("command_role", "empty");
+                config.setProperty("broadcast_delay", "10");
+                config.setProperty("broadcast_prefix", "[PolyChat]");
+                config.setProperty("prefix_color", "15"); //Defaults to white
                 config.store(fout, null);
             } catch (IOException e) {
                 //Returns false because saving the default config failed

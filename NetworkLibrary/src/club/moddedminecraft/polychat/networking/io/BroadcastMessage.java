@@ -23,24 +23,39 @@ import java.io.IOException;
 
 public final class BroadcastMessage extends Message{
     protected static final short MESSAGE_TYPE_ID = 0;
-    private final String message;
+    private final String prefix, message;
+    private final int prefix_color;
 
     protected BroadcastMessage(DataInputStream dataInputStream) throws IOException {
+        prefix = dataInputStream.readUTF();
         message = dataInputStream.readUTF();
+        prefix_color = dataInputStream.readInt();
     }
 
-    public BroadcastMessage(String broadcastMessage){
-        message = broadcastMessage;
+    public BroadcastMessage(String prefix, String broadcastMessage, int prefix_color){
+        this.prefix = prefix;
+        this.message = broadcastMessage;
+        this.prefix_color = prefix_color;
     }
 
     public String getMessage(){
         return message;
     }
 
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public int prefixColor() {
+        return this.prefix_color;
+    }
+
     @Override
     protected void send(DataOutputStream dataOutputStream) throws IOException{
         dataOutputStream.writeShort(MESSAGE_TYPE_ID);
+        dataOutputStream.writeUTF(prefix);
         dataOutputStream.writeUTF(message);
+        dataOutputStream.writeInt(prefix_color);
     }
 
 }

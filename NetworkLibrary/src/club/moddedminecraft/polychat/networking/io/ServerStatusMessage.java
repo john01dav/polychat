@@ -27,16 +27,18 @@ import java.io.IOException;
 //Used for broadcasting server online/offline events
 public class ServerStatusMessage extends Message {
     protected static final short MESSAGE_TYPE_ID = 2;
-    private final String serverID;
+    private final String serverID, prefixJson;
     private final short state;
 
-    public ServerStatusMessage(String serverID, short state) {
+    public ServerStatusMessage(String serverID, String prefixJson, short state) {
         this.serverID = serverID;
+        this.prefixJson = prefixJson;
         this.state = state;
     }
 
     public ServerStatusMessage(DataInputStream istream) throws IOException {
         this.serverID = istream.readUTF();
+        this.prefixJson = istream.readUTF();
         this.state = istream.readShort();
     }
 
@@ -48,10 +50,15 @@ public class ServerStatusMessage extends Message {
         return this.state;
     }
 
+    public String getPrefixJson() {
+        return this.prefixJson;
+    }
+
     @Override
     protected void send(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeShort(MESSAGE_TYPE_ID);
         dataOutputStream.writeUTF(serverID);
+        dataOutputStream.writeUTF(prefixJson);
         dataOutputStream.writeShort(state);
     }
 }

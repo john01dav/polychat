@@ -68,7 +68,9 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
                     statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has left the game`**";
                     Main.serverInfo.playerLeave(playerStatus.getServerID(), playerStatus.getUserName());
                 }
-                Main.channel.sendMessage(statusString);
+                if (!playerStatus.getSilent()) {
+                    Main.channel.sendMessage(statusString);
+                }
             }
         }
     }

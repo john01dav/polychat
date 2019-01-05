@@ -11,7 +11,16 @@ use_port: This is the port that the server will use to listen for connections co
 guild_name: This is the name of the discord server that contains the channel that will be used for sending/receiving chat messages.
 channel_name: This is the name of the channel that is used for sending/receiving chat messages.
 command_role: This is the name of the role that has access for using special commands like restarting MC servers.  Currently not yet implemented.
+broadcast_delay: This is the number of minutes between each broadcast message being sent.
+broadcast_prefix: This is the prefix that is placed in front of broadcast messages.
+prefix_color: This is the color of the broadcast prefix.  Refer to PolyChat Client README for color codes.
 
+--Messages.txt--
+This file contains all of the broadcast messages that are sent out.  Contents are randomized after iterating through the list each time.
+Each line corresponds to one individual message, and example being "Go to <link> and vote for the server!" or "Donate at <link>"
+The broadcaster does nothing if the file is empty.
+
+--Discord Commands--
 Currently the commands "listall" and "listplayers" can be used from discord.
 Listall prints information about all online MC servers.
 Listplayers prints players logged into an MC server specified by server prefix.
