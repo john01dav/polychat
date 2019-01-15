@@ -31,10 +31,13 @@ public class DiscordCommand {
             if (command.startsWith("listall")) Main.serverInfo.serversInfo();
             else if (command.startsWith("listplayers")) {
                 String id = command.replace("listplayers ", "");
-                Main.serverInfo.serverInfo(id);
+                try {
+                    int index = Integer.parseInt(id);
+                    Main.serverInfo.serverInfo(index);
+                }catch (NumberFormatException ignored) {}
             }
         }else {
-            ChatMessage discordMessage = new ChatMessage("[Discord] " + user.getName(), message.getContent(), "empty");
+            ChatMessage discordMessage = new ChatMessage(user.getName() + ":", message.getContent(), "empty");
             Main.chatServer.sendMessage(discordMessage);
         }
     }

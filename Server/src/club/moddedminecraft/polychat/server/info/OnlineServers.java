@@ -22,6 +22,7 @@ package club.moddedminecraft.polychat.server.info;
 
 import club.moddedminecraft.polychat.server.Main;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.util.RateLimitException;
 
 import java.util.ArrayList;
 
@@ -36,34 +37,65 @@ public class OnlineServers {
     public void serversInfo() {
         IChannel messageChannel = Main.channel;
         String info = "**`Servers Online [" + onlineServers.size() + "]:`**\n";
-        for (OnlineServer server : onlineServers) {
-            info = info + "   " + server.getServerID() + " : "
+        for (int i = 0; i < onlineServers.size(); i++) {
+            OnlineServer server = onlineServers.get(i);
+            info = info + "   " + (i+1) + " : " + server.getServerID() + " : "
                     + server.getServerName() + " : "
                     + server.getServerAddress() + " "
                     + "[" + server.playerCount() + "/" + server.maxPlayers() + "]\n";
         }
-        messageChannel.sendMessage(info);
+        boolean limited;
+        do {
+            limited = false;
+            try {
+                messageChannel.sendMessage(info);
+            }catch (RateLimitException e) {
+                limited = true;
+                try {
+                    Thread.sleep(e.getRetryDelay());
+                } catch (InterruptedException ignored) {}
+            }
+        }while (limited);
     }
 
     //Prints info about a specific server
-    public void serverInfo(String serverID) {
+    public void serverInfo(int serverIndex) {
         IChannel messageChannel = Main.channel;
-        OnlineServer server = null;
-        for (OnlineServer onlineServer : onlineServers) {
-            if (onlineServer.getServerID().equals(serverID)) {
-                server = onlineServer;
-                break;
-            }
+        int index = (serverIndex - 1);
+        if ((index < 0) || (index > onlineServers.size())) {
+            boolean limited;
+            do {
+                limited = false;
+                try {
+                    messageChannel.sendMessage("No such server is online");
+                }catch (RateLimitException e) {
+                    limited = true;
+                    try {
+                        Thread.sleep(e.getRetryDelay());
+                    } catch (InterruptedException ignored) {}
+                }
+            }while (limited);
+            return;
         }
+        OnlineServer server = onlineServers.get(index);
         if (server != null) {
             String info = "**`[" + server.playerCount() + "/" + server.maxPlayers()
                     + "] players in " + server.getServerName() + ":`**\n";
             for (String playerName : server.onlinePlayers) {
                 info = info + "   " + playerName + "\n";
             }
-            messageChannel.sendMessage(info);
-        }else {
-            messageChannel.sendMessage("No such server is online");
+            boolean limited;
+            do {
+                limited = false;
+                try {
+                    messageChannel.sendMessage(info);
+                }catch (RateLimitException e) {
+                    limited = true;
+                    try {
+                        Thread.sleep(e.getRetryDelay());
+                    } catch (InterruptedException ignored) {}
+                }
+            }while (limited);
         }
     }
 

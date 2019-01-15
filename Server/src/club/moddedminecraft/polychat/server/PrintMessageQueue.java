@@ -19,6 +19,7 @@ package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.*;
 import club.moddedminecraft.polychat.networking.util.ThreadedQueue;
+import sx.blah.discord.util.RateLimitException;
 
 public class PrintMessageQueue extends ThreadedQueue<MessageData> {
     @Override
@@ -27,51 +28,65 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
     }
 
     @Override
-    protected void handle(MessageData messageData) throws Throwable {
+    protected void handle(MessageData messageData) {
         Message rawMessage = messageData.getMessage();
-        if (Main.channel != null) {
-            if (rawMessage instanceof ChatMessage){
-                ChatMessage message = ((ChatMessage) rawMessage);
-                System.out.println(message.getUsername() + " " + message.getMessage());
-                Main.channel.sendMessage("**`" + message.getUsername() + "`** " + message.getMessage());
-            }else if (rawMessage instanceof ServerInfoMessage) {
-                ServerInfoMessage infoMessage = ((ServerInfoMessage) rawMessage);
-                Main.serverInfo.serverConnected(infoMessage.getServerID(),
-                        infoMessage.getServerName(),
-                        infoMessage.getServerAddress(),
-                        infoMessage.getMaxPlayers());
-            }else if (rawMessage instanceof ServerStatusMessage) {
-                ServerStatusMessage serverStatus = ((ServerStatusMessage) rawMessage);
-                switch (serverStatus.getState()) {
-                    case 1:
-                        Main.channel.sendMessage("**`" + serverStatus.getServerID() + " Server Online`**");
-                        Main.serverInfo.serverOnline(serverStatus.getServerID());
-                        break;
-                    case 2:
-                        Main.channel.sendMessage("**`" + serverStatus.getServerID() + " Server Offline`**");
-                        Main.serverInfo.serverOffline(serverStatus.getServerID());
-                        break;
-                    case 3:
-                        Main.channel.sendMessage("**`" + serverStatus.getServerID() + " Server Crashed`**");
-                        Main.serverInfo.serverOffline(serverStatus.getServerID());
-                        break;
-                    default:
-                        System.err.println("Unrecognized server state " + serverStatus.getState() + " received from " + serverStatus.getServerID());
+        boolean limited = false;
+        do {
+            try {
+                limited = false;
+                if (Main.channel != null) {
+                    if (rawMessage instanceof ChatMessage){
+                        ChatMessage message = ((ChatMessage) rawMessage);
+                        System.out.println(message.getUsername() + " " + message.getMessage());
+                        Main.channel.sendMessage("**`" + message.getUsername() + "`** " + message.getMessage());
+                    }else if (rawMessage instanceof ServerInfoMessage) {
+                        ServerInfoMessage infoMessage = ((ServerInfoMessage) rawMessage);
+                        Main.serverInfo.serverConnected(infoMessage.getServerID(),
+                                infoMessage.getServerName(),
+                                infoMessage.getServerAddress(),
+                                infoMessage.getMaxPlayers());
+                    }else if (rawMessage instanceof ServerStatusMessage) {
+                        ServerStatusMessage serverStatus = ((ServerStatusMessage) rawMessage);
+                        switch (serverStatus.getState()) {
+                            case 1:
+                                Main.channel.sendMessage("**`" + serverStatus.getServerID() + " Server Online`**");
+                                Main.serverInfo.serverOnline(serverStatus.getServerID());
+                                break;
+                            case 2:
+                                Main.channel.sendMessage("**`" + serverStatus.getServerID() + " Server Offline`**");
+                                Main.serverInfo.serverOffline(serverStatus.getServerID());
+                                break;
+                            case 3:
+                                Main.channel.sendMessage("**`" + serverStatus.getServerID() + " Server Crashed`**");
+                                Main.serverInfo.serverOffline(serverStatus.getServerID());
+                                break;
+                            default:
+                                System.err.println("Unrecognized server state " + serverStatus.getState() + " received from " + serverStatus.getServerID());
+                        }
+                    }else if (rawMessage instanceof PlayerStatusMessage) {
+                        String statusString;
+                        PlayerStatusMessage playerStatus = ((PlayerStatusMessage) rawMessage);
+                        if (playerStatus.getJoined()) {
+                            statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has joined the game`**";
+                            Main.serverInfo.playerJoin(playerStatus.getServerID(), playerStatus.getUserName());
+                        }else {
+                            statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has left the game`**";
+                            Main.serverInfo.playerLeave(playerStatus.getServerID(), playerStatus.getUserName());
+                        }
+                        if (!playerStatus.getSilent()) {
+                            Main.channel.sendMessage(statusString);
+                        }
+                    }
                 }
-            }else if (rawMessage instanceof PlayerStatusMessage) {
-                String statusString;
-                PlayerStatusMessage playerStatus = ((PlayerStatusMessage) rawMessage);
-                if (playerStatus.getJoined()) {
-                    statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has joined the game`**";
-                    Main.serverInfo.playerJoin(playerStatus.getServerID(), playerStatus.getUserName());
-                }else {
-                    statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has left the game`**";
-                    Main.serverInfo.playerLeave(playerStatus.getServerID(), playerStatus.getUserName());
-                }
-                if (!playerStatus.getSilent()) {
-                    Main.channel.sendMessage(statusString);
-                }
+            }catch (RateLimitException e) {
+                limited = true;
+                try {
+                    Thread.sleep(e.getRetryDelay());
+                } catch (InterruptedException ignored) {}
+            }catch (Exception e) {
+                System.err.println("Error sending message to Discord!");
+                e.printStackTrace();
             }
-        }
+        }while (limited);
     }
 }
