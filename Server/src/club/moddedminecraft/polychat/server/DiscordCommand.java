@@ -20,11 +20,13 @@
 package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.ChatMessage;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 
 public class DiscordCommand {
-    public static void processMessage(IUser user, IMessage message) {
+     public static void processMessage(IUser user, IMessage message) {
         String discordPrefix = Main.config.getProperty("discord_prefix");
         if (message.getContent().startsWith(discordPrefix)) {
             String command = message.getContent().replace(discordPrefix, "");
@@ -37,7 +39,20 @@ public class DiscordCommand {
                 }catch (NumberFormatException ignored) {}
             }
         }else {
-            ChatMessage discordMessage = new ChatMessage(user.getName() + ":", message.getContent(), "empty");
+            String content = message.getContent();
+            // Turn @<User ID> to @<Display Name>
+            for (IUser mention : message.getMentions()) {
+                content = content.replace(mention.toString(), "@" + mention.getDisplayName(Main.channel.getGuild()));
+            }
+            // Turn #<Channel ID> to #channel
+            for (IChannel channel : message.getChannelMentions()) {
+                content = content.replace(channel.toString(), "#" + channel.getName());
+            }
+            // Turn @<Role ID> to @<Role>
+            for (IRole role : message.getRoleMentions()) {
+                content = content.replace(role.toString(), "@" + role.getName());
+            }
+            ChatMessage discordMessage = new ChatMessage(user.getDisplayName(Main.channel.getGuild()) + ":", content, "empty");
             Main.chatServer.sendMessage(discordMessage);
         }
     }

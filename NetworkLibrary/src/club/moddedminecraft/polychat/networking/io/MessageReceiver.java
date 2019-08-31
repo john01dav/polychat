@@ -68,8 +68,11 @@ public final class MessageReceiver {
                     case ServerInfoMessage.MESSAGE_TYPE_ID:
                         messageProcessingQueue.enqueue(new ServerInfoMessage(dataInputStream));
                         break;
+                    case PlayerListMessage.MESSAGE_TYPE_ID:
+                        messageProcessingQueue.enqueue(new PlayerListMessage(dataInputStream));
+                        break;
                     default:
-                        System.err.print("[Polychat] Warning: Illegal message id: " + messageId);
+                        System.err.println("[Polychat] Warning: Illegal message id: " + messageId);
                 }
             }
         }catch (InterruptedIOException | EOFException ignored) {

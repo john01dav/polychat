@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="NetworkLibrary:jar">
+  <artifact type="jar" build-on-make="true" name="NetworkLibrary:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/NetworkLibrary_jar</output-path>
     <root id="archive" name="NetworkLibrary.jar">
       <element id="module-output" name="NetworkLibrary" />

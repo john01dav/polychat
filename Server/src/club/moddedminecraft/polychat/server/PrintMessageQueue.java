@@ -35,17 +35,17 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
             try {
                 limited = false;
                 if (Main.channel != null) {
-                    if (rawMessage instanceof ChatMessage){
+                    if (rawMessage instanceof ChatMessage) {
                         ChatMessage message = ((ChatMessage) rawMessage);
                         System.out.println(message.getUsername() + " " + message.getMessage());
                         Main.channel.sendMessage("**`" + message.getUsername() + "`** " + message.getMessage());
-                    }else if (rawMessage instanceof ServerInfoMessage) {
+                    } else if (rawMessage instanceof ServerInfoMessage) {
                         ServerInfoMessage infoMessage = ((ServerInfoMessage) rawMessage);
                         Main.serverInfo.serverConnected(infoMessage.getServerID(),
                                 infoMessage.getServerName(),
                                 infoMessage.getServerAddress(),
                                 infoMessage.getMaxPlayers());
-                    }else if (rawMessage instanceof ServerStatusMessage) {
+                    } else if (rawMessage instanceof ServerStatusMessage) {
                         ServerStatusMessage serverStatus = ((ServerStatusMessage) rawMessage);
                         switch (serverStatus.getState()) {
                             case 1:
@@ -63,30 +63,34 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
                             default:
                                 System.err.println("Unrecognized server state " + serverStatus.getState() + " received from " + serverStatus.getServerID());
                         }
-                    }else if (rawMessage instanceof PlayerStatusMessage) {
+                    } else if (rawMessage instanceof PlayerStatusMessage) {
                         String statusString;
                         PlayerStatusMessage playerStatus = ((PlayerStatusMessage) rawMessage);
                         if (playerStatus.getJoined()) {
                             statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has joined the game`**";
                             Main.serverInfo.playerJoin(playerStatus.getServerID(), playerStatus.getUserName());
-                        }else {
+                        } else {
                             statusString = "**`" + playerStatus.getServerID() + " " + playerStatus.getUserName() + " has left the game`**";
                             Main.serverInfo.playerLeave(playerStatus.getServerID(), playerStatus.getUserName());
                         }
                         if (!playerStatus.getSilent()) {
                             Main.channel.sendMessage(statusString);
                         }
+                    } else if (rawMessage instanceof PlayerListMessage) {
+                        PlayerListMessage plMessage = (PlayerListMessage) rawMessage;
+                        Main.serverInfo.updatePlayerList(plMessage.getServerID(), plMessage.getPlayerList());
                     }
                 }
-            }catch (RateLimitException e) {
+            } catch (RateLimitException e) {
                 limited = true;
                 try {
                     Thread.sleep(e.getRetryDelay());
-                } catch (InterruptedException ignored) {}
-            }catch (Exception e) {
+                } catch (InterruptedException ignored) {
+                }
+            } catch (Exception e) {
                 System.err.println("Error sending message to Discord!");
                 e.printStackTrace();
             }
-        }while (limited);
+        } while (limited);
     }
 }

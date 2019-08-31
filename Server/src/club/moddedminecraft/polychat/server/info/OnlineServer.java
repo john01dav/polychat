@@ -47,16 +47,6 @@ public class OnlineServer {
         this.started = true;
     }
 
-    //Adds a player to the list
-    public void playerJoined(String name) {
-        this.onlinePlayers.add(name);
-    }
-
-    //Removes a player from the list
-    public void playerLeft(String name) {
-        this.onlinePlayers.remove(name);
-    }
-
     //Gets a count of online players
     public int playerCount() {
         return this.onlinePlayers.size();
@@ -81,4 +71,6 @@ public class OnlineServer {
     public String getServerAddress() {
         return this.serverAddress;
     }
+
+    public void updatePlayerList(ArrayList<String> playerList) { this.onlinePlayers = playerList; }
 }
