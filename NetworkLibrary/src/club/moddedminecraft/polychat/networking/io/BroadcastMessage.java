@@ -21,7 +21,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public final class BroadcastMessage extends Message{
+public final class BroadcastMessage extends Message {
     protected static final short MESSAGE_TYPE_ID = 0;
     private final String prefix, message;
     private final int prefix_color;
@@ -32,13 +32,13 @@ public final class BroadcastMessage extends Message{
         prefix_color = dataInputStream.readInt();
     }
 
-    public BroadcastMessage(String prefix, String broadcastMessage, int prefix_color){
+    public BroadcastMessage(String prefix, String broadcastMessage, int prefix_color) {
         this.prefix = prefix;
         this.message = broadcastMessage;
         this.prefix_color = prefix_color;
     }
 
-    public String getMessage(){
+    public String getMessage() {
         return message;
     }
 
@@ -51,7 +51,7 @@ public final class BroadcastMessage extends Message{
     }
 
     @Override
-    protected void send(DataOutputStream dataOutputStream) throws IOException{
+    protected void send(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeShort(MESSAGE_TYPE_ID);
         dataOutputStream.writeUTF(prefix);
         dataOutputStream.writeUTF(message);

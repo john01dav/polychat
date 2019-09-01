@@ -25,18 +25,18 @@ public final class MessageBus {
     private final MessageReceiver messageReceiver;
     private final MessageSendQueue messageSendQueue;
 
-    public MessageBus(Socket socket, ReceiverCallback receiverCallback){
+    public MessageBus(Socket socket, ReceiverCallback receiverCallback) {
         this.socket = socket;
         messageReceiver = new MessageReceiver(socket, receiverCallback);
         messageSendQueue = new MessageSendQueue(socket);
     }
 
-    public void start(){
+    public void start() {
         messageReceiver.start();
         messageSendQueue.start();
     }
 
-    public void stop(){
+    public void stop() {
         messageReceiver.stop();
         messageSendQueue.stop();
         try {
@@ -51,7 +51,7 @@ public final class MessageBus {
         return this.socket.isClosed();
     }
 
-    public void sendMessage(Message message){
+    public void sendMessage(Message message) {
         messageSendQueue.enqueue(message);
     }
 

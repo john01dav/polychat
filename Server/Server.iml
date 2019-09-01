@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="NetworkLibrary" />
     <orderEntry type="library" exported="" name="com.discord4j:Discord4J:2.10.1" level="project" />
+    <orderEntry type="library" name="org.yaml:snakeyaml:1.25" level="project" />
   </component>
 </module>

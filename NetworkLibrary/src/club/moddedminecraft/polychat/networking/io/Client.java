@@ -29,28 +29,28 @@ public final class Client {
         messageBus = new MessageBus(new Socket(serverIp, port), this::receiveMessage);
     }
 
-    public void start(){
+    public void start() {
         messageBus.start();
     }
 
-    public synchronized ArrayList<Message> getReceivedMessages(){
+    public synchronized ArrayList<Message> getReceivedMessages() {
         ArrayList<Message> messages = receivedMessages;
         receivedMessages = null;
         return messages;
     }
 
-    private synchronized void receiveMessage(Message message){
-        if(receivedMessages == null){
+    private synchronized void receiveMessage(Message message) {
+        if (receivedMessages == null) {
             receivedMessages = new ArrayList<>();
         }
         receivedMessages.add(message);
     }
 
-    public void sendMessage(Message message){
+    public void sendMessage(Message message) {
         messageBus.sendMessage(message);
     }
 
-    public void stop(){
+    public void stop() {
         messageBus.stop();
     }
 

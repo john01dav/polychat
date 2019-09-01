@@ -25,13 +25,13 @@ import java.util.ArrayList;
 public class OnlineServer {
     //Server id is the chat prefix and server name is the full name of the server, such as: [REV] / Revelation
     private final String serverID, serverName, serverAddress;
-    //Since the mod establishes a socket with the main polychat server in preinit, the listing will report
-    //  the server as starting until the server says its fully started
-    private boolean started;
     //For displaying player information
     private final int maxPlayers;
     //List of players currently logged into this server
     protected ArrayList<String> onlinePlayers;
+    //Since the mod establishes a socket with the main polychat server in preinit, the listing will report
+    //  the server as starting until the server says its fully started
+    private boolean started;
 
     public OnlineServer(String serverID, String serverName, String serverAddress, int maxPlayers) {
         this.serverID = serverID;
@@ -47,19 +47,13 @@ public class OnlineServer {
         this.started = true;
     }
 
-    //Adds a player to the list
-    public void playerJoined(String name) {
-        this.onlinePlayers.add(name);
-    }
-
-    //Removes a player from the list
-    public void playerLeft(String name) {
-        this.onlinePlayers.remove(name);
-    }
-
     //Gets a count of online players
     public int playerCount() {
         return this.onlinePlayers.size();
+    }
+
+    public ArrayList<String> getOnlinePlayers() {
+        return this.onlinePlayers;
     }
 
     //The maximum players on this server
@@ -80,5 +74,9 @@ public class OnlineServer {
     //Gets the server address
     public String getServerAddress() {
         return this.serverAddress;
+    }
+
+    public void updatePlayerList(ArrayList<String> playerList) {
+        this.onlinePlayers = playerList;
     }
 }
