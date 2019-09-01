@@ -51,7 +51,7 @@ public class BroadcastManager {
                     Main.chatServer.sendMessage(message);
                 }
             }
-        }catch (InterruptedException ignored) {
+        } catch (InterruptedException ignored) {
             System.out.println("Broadcast thread exiting");
         }
     }

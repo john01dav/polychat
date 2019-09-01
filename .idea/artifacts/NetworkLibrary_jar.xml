@@ -3,6 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/NetworkLibrary_jar</output-path>
     <root id="archive" name="NetworkLibrary.jar">
       <element id="module-output" name="NetworkLibrary" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/yaml/snakeyaml/1.25/snakeyaml-1.25.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

@@ -27,7 +27,7 @@ public final class MessageSendQueue extends ThreadedQueue<Message> {
     private final Socket socket;
     private DataOutputStream dataOutputStream;
 
-    public MessageSendQueue(Socket socket){
+    public MessageSendQueue(Socket socket) {
         this.socket = socket;
     }
 

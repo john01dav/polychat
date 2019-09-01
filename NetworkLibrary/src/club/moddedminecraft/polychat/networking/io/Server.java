@@ -32,83 +32,85 @@ public final class Server {
     private final CopyOnWriteArrayList<MessageBus> messageBuses;
     private Thread listenerThread;
 
-    public Server(int port){
+    public Server(int port) {
         this.port = port;
         messageProcessors = new CopyOnWriteArrayList<>();
         messageBuses = new CopyOnWriteArrayList<>();
         addMessageProcessor(new MessageDispatcherQueue());
     }
 
-    public void start(){
+    public void start() {
         listenerThread = new Thread(this::listenerThread);
         listenerThread.start();
     }
 
-    public void stop(){
+    public void stop() {
         listenerThread.interrupt();
         for (MessageBus bus : messageBuses) {
             bus.stop();
         }
     }
 
-    public void sendMessage(Message message){
+    public void sendMessage(Message message) {
         ArrayList<MessageBus> toRemove = new ArrayList<>();
-        for(MessageBus messageBus : messageBuses){
+        for (MessageBus messageBus : messageBuses) {
             if (messageBus.isSocketClosed()) {
                 toRemove.add(messageBus);
                 messageBus.stop();
-            }else{
+            } else {
                 messageBus.sendMessage(message);
             }
         }
         messageBuses.removeAll(toRemove);
     }
 
-    public void addMessageProcessor(ThreadedQueue<MessageData> messageProcessor){
+    public void addMessageProcessor(ThreadedQueue<MessageData> messageProcessor) {
         messageProcessors.add(messageProcessor);
         messageProcessor.start();
     }
 
-    private void listenerThread(){
-        try{
+    private void listenerThread() {
+        try {
             ServerSocket serverSocket = new ServerSocket(port);
-            while(true){
-                try{
+            while (true) {
+                try {
                     Socket socket = serverSocket.accept();
                     MessageReceiver messageReceiver = new MessageReceiver();
                     MessageBus messageBus = new MessageBus(socket, messageReceiver);
                     messageReceiver.setMessageBus(messageBus);
                     messageBus.start();
                     messageBuses.add(messageBus);
-                }catch(IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }catch (InterruptedIOException ignored) {
-        }catch(IOException e){
+        } catch (InterruptedIOException ignored) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         System.out.println("Server listener thread exiting!");
     }
 
-    private final class MessageDispatcherQueue extends ThreadedQueue<MessageData>{
-        @Override protected void init() {}
+    private final class MessageDispatcherQueue extends ThreadedQueue<MessageData> {
+        @Override
+        protected void init() {
+        }
 
         @Override
         protected void handle(MessageData messageData) {
-            ArrayList<MessageBus>  toRemove = new ArrayList<>();
-            for(MessageBus messageBus : messageBuses){
+            ArrayList<MessageBus> toRemove = new ArrayList<>();
+            for (MessageBus messageBus : messageBuses) {
                 if (messageBus.isSocketClosed()) {
                     toRemove.add(messageBus);
                     messageBus.stop();
-                }else if(messageBus != messageData.getMessageBus()){
+                } else if (messageBus != messageData.getMessageBus()) {
                     messageBus.sendMessage(messageData.getMessage());
                 }
             }
         }
     }
 
-    private final class MessageReceiver implements ReceiverCallback{
+    private final class MessageReceiver implements ReceiverCallback {
         private volatile MessageBus messageBus;
 
         public void setMessageBus(MessageBus messageBus) {
@@ -116,9 +118,9 @@ public final class Server {
         }
 
         @Override
-        public void receive(Message message){
+        public void receive(Message message) {
             MessageData messageData = new MessageData(message, messageBus);
-            for(ThreadedQueue<MessageData> messageProcessor : messageProcessors){
+            for (ThreadedQueue<MessageData> messageProcessor : messageProcessors) {
                 messageProcessor.enqueue(messageData);
             }
         }

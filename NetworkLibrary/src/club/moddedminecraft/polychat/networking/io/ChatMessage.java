@@ -21,7 +21,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public final class ChatMessage extends Message{
+public final class ChatMessage extends Message {
     protected static final short MESSAGE_TYPE_ID = 1;
     private final String username, message, componentJson;
 
@@ -31,7 +31,7 @@ public final class ChatMessage extends Message{
         componentJson = dataInputStream.readUTF();
     }
 
-    public ChatMessage(String username, String message, String componentJson){
+    public ChatMessage(String username, String message, String componentJson) {
         this.username = username;
         this.message = message;
         this.componentJson = componentJson;
@@ -50,7 +50,7 @@ public final class ChatMessage extends Message{
     }
 
     @Override
-    protected void send(DataOutputStream dataOutputStream) throws IOException{
+    protected void send(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeShort(MESSAGE_TYPE_ID);
         dataOutputStream.writeUTF(username);
         dataOutputStream.writeUTF(message);

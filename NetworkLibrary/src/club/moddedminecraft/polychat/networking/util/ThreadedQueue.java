@@ -24,49 +24,51 @@ public abstract class ThreadedQueue<T> {
     private boolean run = true;
     private LinkedList<T> queue = new LinkedList<>();
 
-    public final synchronized void start(){
+    public final synchronized void start() {
         thread = new Thread(this::queueThread);
         thread.start();
     }
 
-    public final synchronized void stop(){
+    public final synchronized void stop() {
         this.run = false;
         thread.interrupt();
     }
 
-    public final synchronized void enqueue(T obj){
+    public final synchronized void enqueue(T obj) {
         queue.push(obj);
-        if(thread != null) thread.interrupt();
+        if (thread != null) thread.interrupt();
     }
 
-    private final void queueThread(){
-        try{
+    private final void queueThread() {
+        try {
             init();
-            while(true){
-                try{
+            while (true) {
+                try {
                     Thread.sleep(5000);
-                }catch(InterruptedException e){}
+                } catch (InterruptedException e) {
+                }
                 if (!(this.run)) break;
                 T nextItem;
-                while((nextItem = getNextItem()) != null){
+                while ((nextItem = getNextItem()) != null) {
                     handle(nextItem);
                 }
             }
-        }catch(Throwable t){
+        } catch (Throwable t) {
             t.printStackTrace();
         }
         System.out.println("Queue thread exiting!");
     }
 
-    private final synchronized T getNextItem(){
-        if(queue.isEmpty()){
+    private final synchronized T getNextItem() {
+        if (queue.isEmpty()) {
             return null;
-        }else{
+        } else {
             return queue.pop();
         }
     }
 
     protected abstract void init() throws Throwable;
+
     protected abstract void handle(T obj) throws Throwable;
 
 }

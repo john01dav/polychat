@@ -20,14 +20,11 @@
 
 package club.moddedminecraft.polychat.server.info;
 
-import club.moddedminecraft.polychat.server.Main;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.util.RateLimitException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class OnlineServers {
+
     private ArrayList<OnlineServer> onlineServers;
     private HashMap<String, OnlineServer> serverMap;
 
@@ -36,80 +33,24 @@ public class OnlineServers {
         this.serverMap = new HashMap<>();
     }
 
-    //Prints info about all servers to discord
-    public void serversInfo() {
-        IChannel messageChannel = Main.channel;
-        String info = "**Servers Online [" + onlineServers.size() + "]:**\n";
-        for (OnlineServer server : onlineServers) {
-            info = String.format(
-                    "%s**%s** [%d/%d]: %s",
-                    info,
-                    server.getServerAddress(),
-                    server.playerCount(),
-                    server.maxPlayers(),
-                    String.join(" **|** ", server.onlinePlayers)
-            );
-//            info = info + "   " + (i+1) + " : " + server.getServerID() + " : "
-//                    + server.getServerName() + " : "
-//                    + server.getServerAddress() + " "
-//                    + "[" + server.playerCount() + "/" + server.maxPlayers() + "]\n";
-        }
-        boolean limited;
-        do {
-            limited = false;
-            try {
-                messageChannel.sendMessage(info);
-            } catch (RateLimitException e) {
-                limited = true;
-                try {
-                    Thread.sleep(e.getRetryDelay());
-                } catch (InterruptedException ignored) {
-                }
-            }
-        } while (limited);
+    public ArrayList<OnlineServer> getServers() {
+        return onlineServers;
     }
 
-    //Prints info about a specific server
-    public void serverInfo(int serverIndex) {
-        IChannel messageChannel = Main.channel;
-        int index = (serverIndex - 1);
-        if ((index < 0) || (index > onlineServers.size())) {
-            boolean limited;
-            do {
-                limited = false;
-                try {
-                    messageChannel.sendMessage("No such server is online");
-                } catch (RateLimitException e) {
-                    limited = true;
-                    try {
-                        Thread.sleep(e.getRetryDelay());
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            } while (limited);
-            return;
-        }
-        OnlineServer server = onlineServers.get(index);
-        if (server != null) {
-            String info = "**`[" + server.playerCount() + "/" + server.maxPlayers()
-                    + "] players in " + server.getServerName() + ":`**\n";
-            for (String playerName : server.onlinePlayers) {
-                info = info + "   " + playerName + "\n";
+    public OnlineServer getServer(String serverID) {
+        System.out.println(serverMap);
+        return serverMap.getOrDefault(serverID, null);
+    }
+
+    public OnlineServer getServerNormalized(String serverID) {
+        for (OnlineServer server : onlineServers) {
+            String sID = server.getServerID();
+            sID = sID.toLowerCase().replaceAll("[^a-zA-Z0-9 ]", "");
+            if (sID.equals(serverID.toLowerCase())) {
+                return server;
             }
-            boolean limited;
-            do {
-                limited = false;
-                try {
-                    messageChannel.sendMessage(info);
-                } catch (RateLimitException e) {
-                    limited = true;
-                    try {
-                        Thread.sleep(e.getRetryDelay());
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            } while (limited);
         }
+        return null;
     }
 
     //Adds a server to the list
@@ -126,7 +67,9 @@ public class OnlineServers {
     //Marks a server as online
     public void serverOnline(String serverID) {
         OnlineServer server = serverMap.get(serverID);
-        if (server != null) { server.setStarted(); }
+        if (server != null) {
+            server.setStarted();
+        }
     }
 
     //Removes a server as it went offline
@@ -137,9 +80,6 @@ public class OnlineServers {
     }
 
     public void updatePlayerList(String serverID, ArrayList<String> playerList) {
-//        System.out.println(serverID);
-//        System.out.println(serverMap);
-//        System.out.println(playerList);
         OnlineServer server = serverMap.get(serverID);
         if (server != null) {
             server.updatePlayerList(playerList);

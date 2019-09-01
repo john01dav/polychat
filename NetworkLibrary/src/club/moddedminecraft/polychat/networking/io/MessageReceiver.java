@@ -31,28 +31,28 @@ public final class MessageReceiver {
     private final MessageProcessingQueue messageProcessingQueue = new MessageProcessingQueue();
     private Thread receiverThread;
 
-    public MessageReceiver(Socket socket, ReceiverCallback receiverCallback){
+    public MessageReceiver(Socket socket, ReceiverCallback receiverCallback) {
         this.socket = socket;
         this.receiverCallback = receiverCallback;
     }
 
-    public void start(){
+    public void start() {
         messageProcessingQueue.start();
         receiverThread = new Thread(this::receiverThread);
         receiverThread.start();
     }
 
-    public void stop(){
+    public void stop() {
         receiverThread.interrupt();
     }
 
-    private void receiverThread(){
-        try(
+    private void receiverThread() {
+        try (
                 DataInputStream dataInputStream = new DataInputStream(socket.getInputStream())
-        ){
-            while(true){
+        ) {
+            while (true) {
                 short messageId = dataInputStream.readShort();
-                switch(messageId){
+                switch (messageId) {
                     case ChatMessage.MESSAGE_TYPE_ID:
                         messageProcessingQueue.enqueue(new ChatMessage(dataInputStream));
                         break;
@@ -75,8 +75,8 @@ public final class MessageReceiver {
                         System.err.println("[Polychat] Warning: Illegal message id: " + messageId);
                 }
             }
-        }catch (InterruptedIOException | EOFException ignored) {
-        }catch (IOException e){
+        } catch (InterruptedIOException | EOFException ignored) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         try {
@@ -87,9 +87,11 @@ public final class MessageReceiver {
         System.out.println("Message receiver thread exiting!");
     }
 
-    private class MessageProcessingQueue extends ThreadedQueue<Message>{
+    private class MessageProcessingQueue extends ThreadedQueue<Message> {
 
-        @Override protected void init() {}
+        @Override
+        protected void init() {
+        }
 
         @Override
         protected void handle(Message obj) {

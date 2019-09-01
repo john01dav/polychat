@@ -38,7 +38,9 @@ public final class Main {
     public static IDiscordClient discordClient;
     public static IChannel channel = null;
     public static OnlineServers serverInfo = new OnlineServers();
+    public static DiscordHandler discordHandler = new DiscordHandler();
     public static BroadcastManager broadcastManager = null;
+    public static File yamlConfig;
 
     public static void main(String[] args) {
         //Reads the config file and exits if something went wrong
@@ -55,7 +57,7 @@ public final class Main {
                 (config.getProperty("channel_name").equals("empty"))) {
             System.out.println("Discord parameters are empty, not starting discord connection.");
             startServer();
-        }else{
+        } else {
             initDiscord();
         }
 
@@ -87,7 +89,7 @@ public final class Main {
                     messages.add(broadcastMessage);
                 }
                 broadcastManager = new BroadcastManager(messages);
-            }catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("Error reading broadcast messages!");
                 e.printStackTrace();
             }
@@ -117,6 +119,7 @@ public final class Main {
         //Creates the properties object and establishes the path to the config file
         config = new Properties();
         configFile = new File(System.getProperty("user.dir"), "polychat.properties");
+        yamlConfig = new File(System.getProperty("user.dir"), "commands.yml");
 
         //Checks if the config file exists.  Reads it if it does and creates a default one otherwise.
         if (configFile.exists() && configFile.isFile()) {
@@ -125,7 +128,7 @@ public final class Main {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             //Establishes an automatically closed output stream which creates the file
             try (FileOutputStream fout = new FileOutputStream(configFile)) {
                 //Sets default properties and writes them to disk
@@ -153,7 +156,7 @@ public final class Main {
         ClientBuilder builder = new ClientBuilder();
         builder.withToken(config.getProperty("api_token"));
         discordClient = builder.login();
-        discordClient.getDispatcher().registerListener(new DiscordEvent());
+        discordClient.getDispatcher().registerListener(discordHandler);
     }
 
     //Initializes the connection socket for game servers
@@ -168,7 +171,7 @@ public final class Main {
             messageQueue = new PrintMessageQueue();
             chatServer.addMessageProcessor(messageQueue);
             chatServer.start();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
