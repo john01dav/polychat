@@ -22,17 +22,23 @@ package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.ChatMessage;
 import club.moddedminecraft.polychat.server.command.*;
+import com.vdurmont.emoji.EmojiParser;
 import org.yaml.snakeyaml.Yaml;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.*;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.handle.obj.IUser;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DiscordHandler {
 
@@ -53,11 +59,11 @@ public class DiscordHandler {
                         Main.startServer();
                         discordPrefix = Main.config.getProperty("discord_prefix", "!");
                         manager.setPrefix(discordPrefix);
-//                        try {
-                        registerCommands();
-//                        } catch (Exception e) {
-//                            System.err.println("Error " + e.toString() + " encountered while registering commands, ignoring...");
-//                        }
+                        try {
+                            registerCommands();
+                        } catch (Exception e) {
+                            System.err.println("Error " + e.toString() + " encountered while registering commands, ignoring...");
+                        }
                         return;
                     }
                 }
@@ -122,29 +128,29 @@ public class DiscordHandler {
         if (message.getContent().startsWith(discordPrefix)) {
             String newMessage = manager.run(message);
             if (!newMessage.isEmpty()) {
+                System.out.println(newMessage);
                 Main.channel.sendMessage(newMessage);
             }
         } else {
             ChatMessage discordMessage = new ChatMessage(user.getDisplayName(Main.channel.getGuild()) + ":", formatMessage(message), "empty");
+            System.out.println(discordMessage.getMessage());
             Main.chatServer.sendMessage(discordMessage);
         }
     }
 
-    public String formatMessage(IMessage message) {
-        String content = message.getContent();
-        // Turn @<User ID> to @<Display Name>
-        for (IUser mention : message.getMentions()) {
-            content = content.replace(mention.toString(), "@" + mention.getDisplayName(Main.channel.getGuild()));
+    private String formatMessage(IMessage message) {
+        String messageContent = message.getFormattedContent();
+        messageContent = EmojiParser.parseToAliases(messageContent);
+
+        Pattern emojiName = Pattern.compile("<(:\\w+:)\\d+>");
+        Matcher nameMatch = emojiName.matcher(messageContent);
+        while (nameMatch.find()) {
+            for (int i = 0; i <= nameMatch.groupCount(); i++) {
+                messageContent = messageContent.replaceFirst("(<:\\w+:\\d+>)", nameMatch.group(i));
+            }
         }
-        // Turn #<Channel ID> to #channel
-        for (IChannel channel : message.getChannelMentions()) {
-            content = content.replace(channel.toString(), "#" + channel.getName());
-        }
-        // Turn @<Role ID> to @<Role>
-        for (IRole role : message.getRoleMentions()) {
-            content = content.replace(role.toString(), "@" + role.getName());
-        }
-        return content;
+
+        return messageContent;
     }
 
 }
