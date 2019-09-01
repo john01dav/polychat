@@ -124,7 +124,6 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
         Pattern userMentions = Pattern.compile("(@\\(.+\\))");
         Matcher userMentionMatcher = userMentions.matcher(message);
         while (userMentionMatcher.find()) {
-            System.out.println("MATCHED!!!!!!!!!!!!!!!");
             for (int i = 0; i <= userMentionMatcher.groupCount(); i++) {
                 String userMention = userMentionMatcher.group(i);
                 // Remove @ and ()
