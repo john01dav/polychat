@@ -22,7 +22,6 @@ package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.ChatMessage;
 import club.moddedminecraft.polychat.server.command.*;
-import com.vdurmont.emoji.EmojiManager;
 import com.vdurmont.emoji.EmojiParser;
 import org.yaml.snakeyaml.Yaml;
 import sx.blah.discord.api.events.EventSubscriber;
@@ -38,7 +37,6 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.DoubleToIntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,11 +59,11 @@ public class DiscordHandler {
                         Main.startServer();
                         discordPrefix = Main.config.getProperty("discord_prefix", "!");
                         manager.setPrefix(discordPrefix);
-//                        try {
-                        registerCommands();
-//                        } catch (Exception e) {
-//                            System.err.println("Error " + e.toString() + " encountered while registering commands, ignoring...");
-//                        }
+                        try {
+                            registerCommands();
+                        } catch (Exception e) {
+                            System.err.println("Error " + e.toString() + " encountered while registering commands, ignoring...");
+                        }
                         return;
                     }
                 }
@@ -130,10 +128,12 @@ public class DiscordHandler {
         if (message.getContent().startsWith(discordPrefix)) {
             String newMessage = manager.run(message);
             if (!newMessage.isEmpty()) {
+                System.out.println(newMessage);
                 Main.channel.sendMessage(newMessage);
             }
         } else {
             ChatMessage discordMessage = new ChatMessage(user.getDisplayName(Main.channel.getGuild()) + ":", formatMessage(message), "empty");
+            System.out.println(discordMessage.getMessage());
             Main.chatServer.sendMessage(discordMessage);
         }
     }

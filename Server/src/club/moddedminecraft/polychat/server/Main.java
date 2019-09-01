@@ -25,6 +25,8 @@ import club.moddedminecraft.polychat.server.info.OnlineServers;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.util.RateLimitException;
 
 import java.io.*;
 import java.util.ArrayList;

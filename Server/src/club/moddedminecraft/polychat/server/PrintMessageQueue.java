@@ -19,9 +19,17 @@ package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.*;
 import club.moddedminecraft.polychat.networking.util.ThreadedQueue;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IRole;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.RateLimitException;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class PrintMessageQueue extends ThreadedQueue<MessageData> {
+
     @Override
     protected void init() {
         System.out.println("ready to print messages");
@@ -38,7 +46,7 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
                     if (rawMessage instanceof ChatMessage) {
                         ChatMessage message = ((ChatMessage) rawMessage);
                         System.out.println(message.getUsername() + " " + message.getMessage());
-                        Main.channel.sendMessage("**`" + message.getUsername() + "`** " + message.getMessage());
+                        Main.channel.sendMessage("**`" + message.getUsername() + "`** " + formatMessage(message.getMessage()));
                     } else if (rawMessage instanceof ServerInfoMessage) {
                         ServerInfoMessage infoMessage = ((ServerInfoMessage) rawMessage);
                         Main.serverInfo.serverConnected(infoMessage.getServerID(),
@@ -92,5 +100,45 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
                 e.printStackTrace();
             }
         } while (limited);
+
+    }
+
+    private String formatMessage(String message) {
+
+        IGuild guild = Main.channel.getGuild();
+
+        Pattern roleMentions = Pattern.compile("(@\\w+)");
+        Matcher roleMentionMatcher = roleMentions.matcher(message);
+        while (roleMentionMatcher.find()) {
+            for (int i = 0; i <= roleMentionMatcher.groupCount(); i++) {
+                String roleMention = roleMentionMatcher.group(i);
+                String name = roleMention.substring(1);
+
+                List<IRole> roleList = guild.getRolesByName(name);
+                if (roleList.size() > 0) {
+                    message = message.replace(roleMention, String.valueOf(roleList.get(0)));
+                }
+            }
+        }
+
+        Pattern userMentions = Pattern.compile("(@\\(.+\\))");
+        Matcher userMentionMatcher = userMentions.matcher(message);
+        while (userMentionMatcher.find()) {
+            System.out.println("MATCHED!!!!!!!!!!!!!!!");
+            for (int i = 0; i <= userMentionMatcher.groupCount(); i++) {
+                String userMention = userMentionMatcher.group(i);
+                // Remove @ and ()
+                String name = userMention.substring(2, (userMention.indexOf(')')));
+                System.out.println(userMention);
+                System.out.println(name);
+
+                List<IUser> userList = guild.getUsersByName(name);
+                if (userList.size() > 0) {
+                    message = message.replace(userMention, String.valueOf(userList.get(0)));
+                }
+            }
+        }
+
+        return message;
     }
 }
