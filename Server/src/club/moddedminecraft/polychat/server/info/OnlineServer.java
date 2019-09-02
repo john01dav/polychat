@@ -20,6 +20,8 @@
 
 package club.moddedminecraft.polychat.server.info;
 
+import club.moddedminecraft.polychat.networking.io.MessageBus;
+
 import java.util.ArrayList;
 
 public class OnlineServer {
@@ -32,14 +34,16 @@ public class OnlineServer {
     //Since the mod establishes a socket with the main polychat server in preinit, the listing will report
     //  the server as starting until the server says its fully started
     private boolean started;
+    private MessageBus messageBus;
 
-    public OnlineServer(String serverID, String serverName, String serverAddress, int maxPlayers) {
+    public OnlineServer(String serverID, String serverName, String serverAddress, int maxPlayers, MessageBus messageBus) {
         this.serverID = serverID;
         this.serverName = serverName;
         this.serverAddress = serverAddress;
         this.started = false;
         this.maxPlayers = maxPlayers;
         this.onlinePlayers = new ArrayList<>();
+        this.messageBus = messageBus;
     }
 
     //Sets this server as started
@@ -74,6 +78,10 @@ public class OnlineServer {
     //Gets the server address
     public String getServerAddress() {
         return this.serverAddress;
+    }
+
+    public MessageBus getMessageBus() {
+        return messageBus;
     }
 
     public void updatePlayerList(ArrayList<String> playerList) {
