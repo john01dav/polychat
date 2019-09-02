@@ -52,6 +52,7 @@ public final class MessageReceiver {
         ) {
             while (true) {
                 short messageId = dataInputStream.readShort();
+
                 switch (messageId) {
                     case ChatMessage.MESSAGE_TYPE_ID:
                         messageProcessingQueue.enqueue(new ChatMessage(dataInputStream));
@@ -71,8 +72,14 @@ public final class MessageReceiver {
                     case PlayerListMessage.MESSAGE_TYPE_ID:
                         messageProcessingQueue.enqueue(new PlayerListMessage(dataInputStream));
                         break;
+                    case CommandMessage.MESSAGE_TYPE_ID:
+                        messageProcessingQueue.enqueue(new CommandMessage(dataInputStream));
+                        break;
+                    case CommandOutputMessage.MESSAGE_TYPE_ID:
+                        messageProcessingQueue.enqueue(new CommandOutputMessage(dataInputStream));
+                        break;
                     default:
-                        System.err.println("[Polychat] Warning: Illegal message id: " + messageId);
+                        System.err.println("[PolyChat] Warning: Illegal message id: " + messageId);
                 }
             }
         } catch (InterruptedIOException | EOFException ignored) {

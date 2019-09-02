@@ -20,9 +20,11 @@
 
 package club.moddedminecraft.polychat.server.command;
 
+import club.moddedminecraft.polychat.networking.io.CommandMessage;
 import club.moddedminecraft.polychat.server.Main;
 import club.moddedminecraft.polychat.server.info.OnlineServer;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,18 +46,23 @@ public class MinecraftCommand extends RoleCommand {
         return matcher.groupCount();
     }
 
-    public String run(String[] args) {
+    public String run(String[] inputArgs) {
         String command = this.command;
 
-        if (args.length < 1) {
+        if (inputArgs.length < 1) {
             return "Error running command: Server prefix required";
         }
 
-        if (args.length < (this.argCount - 1)) {
-            return "Expected at least " + this.argCount + " parameters, recieved " + (args.length - 1);
+        if (inputArgs.length < (this.argCount - 1)) {
+            return "Expected at least " + this.argCount + " parameters, recieved " + (inputArgs.length - 1);
         }
 
-        String serverID = args[0];
+        String serverID = inputArgs[0];
+        ArrayList<String> args = new ArrayList<>();
+        for (int i = 1; i < inputArgs.length; i++) {
+            args.add(inputArgs[i]);
+        }
+
         OnlineServer server = Main.serverInfo.getServerNormalized(serverID);
         if (server == null) {
             return "Error running command: server prefix " + serverID + " does not exist.";
@@ -71,14 +78,14 @@ public class MinecraftCommand extends RoleCommand {
                 String toBeReplaced = matcher.group(i);
                 String replaceWith;
                 int argNum = Integer.parseInt(toBeReplaced.substring(1));
-                replaceWith = args[argNum];
+                replaceWith = args.get(argNum - 1);
                 command = command.replace(toBeReplaced, replaceWith);
             }
         }
         command = command.replace("$args", String.join(" ", args));
 
-        return "COMMAND ON SERVER " + server.getServerID() + ": " + command;
-
+        server.getMessageBus().sendMessage(new CommandMessage(command));
+        return "";
     }
 
 }

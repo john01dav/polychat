@@ -20,6 +20,8 @@
 
 package club.moddedminecraft.polychat.server.info;
 
+import club.moddedminecraft.polychat.networking.io.MessageBus;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -54,12 +56,12 @@ public class OnlineServers {
     }
 
     //Adds a server to the list
-    public void serverConnected(String serverID, String serverName, String serverAddress, int maxPlayers) {
+    public void serverConnected(String serverID, String serverName, String serverAddress, int maxPlayers, MessageBus messageBus) {
         OnlineServer toRemove = serverMap.get(serverID);
         if (toRemove != null) {
             onlineServers.remove(toRemove);
         }
-        OnlineServer connected = new OnlineServer(serverID, serverName, serverAddress, maxPlayers);
+        OnlineServer connected = new OnlineServer(serverID, serverName, serverAddress, maxPlayers, messageBus);
         this.onlineServers.add(connected);
         this.serverMap.put(serverID, connected);
     }

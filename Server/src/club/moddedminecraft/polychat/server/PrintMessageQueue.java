@@ -19,16 +19,19 @@ package club.moddedminecraft.polychat.server;
 
 import club.moddedminecraft.polychat.networking.io.*;
 import club.moddedminecraft.polychat.networking.util.ThreadedQueue;
+import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IRole;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.RateLimitException;
 
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PrintMessageQueue extends ThreadedQueue<MessageData> {
+
 
     @Override
     protected void init() {
@@ -52,7 +55,8 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
                         Main.serverInfo.serverConnected(infoMessage.getServerID(),
                                 infoMessage.getServerName(),
                                 infoMessage.getServerAddress(),
-                                infoMessage.getMaxPlayers());
+                                infoMessage.getMaxPlayers(),
+                                messageData.getMessageBus());
                     } else if (rawMessage instanceof ServerStatusMessage) {
                         ServerStatusMessage serverStatus = ((ServerStatusMessage) rawMessage);
                         switch (serverStatus.getState()) {
@@ -87,6 +91,17 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
                     } else if (rawMessage instanceof PlayerListMessage) {
                         PlayerListMessage plMessage = (PlayerListMessage) rawMessage;
                         Main.serverInfo.updatePlayerList(plMessage.getServerID(), plMessage.getPlayerList());
+                    } else if (rawMessage instanceof CommandOutputMessage) {
+                        CommandOutputMessage message = (CommandOutputMessage) rawMessage;
+
+                        EmbedObject embed = new EmbedObject();
+                        embed.title = "/" + message.getCommand();
+                        embed.description = message.getCommandOutput();
+                        Random rand = new Random();
+                        // random colors :O
+                        embed.color = rand.nextInt(0xFFFFFF);
+
+                        Main.channel.sendMessage(embed);
                     }
                 }
             } catch (RateLimitException e) {
@@ -140,4 +155,5 @@ public class PrintMessageQueue extends ThreadedQueue<MessageData> {
 
         return message;
     }
+
 }

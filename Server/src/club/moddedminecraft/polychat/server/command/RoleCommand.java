@@ -52,7 +52,7 @@ public abstract class RoleCommand extends Command {
 
     public String verifyAndRun(IUser user, String[] args) {
         if (!verifyRole(user, role)) {
-            return "User not verified to perform this command";
+            return "User does not have permission to perform this command";
         }
         return run(args);
     }
